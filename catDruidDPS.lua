@@ -163,7 +163,7 @@ function CatDruidDPS_main(mainDamage, opener, finisher, isPowerShift, druidBarAd
 	--choose which action to perform
 	if (currentForm == catForm and prowl == true and (energy >= openerEnergy or clearcast == true)) then cast(opener);
 	elseif (currentForm == catForm and CatDruidDPS_findAttackActionSlot() == 0) then AttackTarget();
-  elseif (currentForm == catForm and CatDruidDPS_isTargetLowHP(groupAvgDPS)) then
+  elseif (currentForm == catForm and CatDruidDPS_isTargetLowHP(groupAvgDPS) and (energy >= 15 or clearcast == true)) then
     --DEFAULT_CHAT_FRAME:AddMessage("--- EARLY BITE ---");
     cast("Ferocious Bite");
 	elseif (currentForm == catForm and cp >= 5 and (energy >= minFinisherEnergy or clearcast == true)) then 
