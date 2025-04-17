@@ -1,7 +1,7 @@
-## Author: Cernie
+## Author: 101arg101
 ## Interface: 11200
 ## Title: CatDruidDPS
-## Notes: Script function for smart Cat Druid DPS
+## Notes: Script function for smart Cat Druid DPS with predictive finisher for twow
 ## Version: 1.19
 catDruidDPS.xml
 catDruidDPS.lua

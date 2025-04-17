@@ -1,5 +1,7 @@
 [![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=3LLQHP7FGQJWL&currency_code=USD)
 
+The above paypal links to Cernie, not me. I do not take credit for his code.
+
 # CatDruidDPS
 One button feral druid dps macro for vanilla World of Warcraft (1.12.1).
 
@@ -12,6 +14,8 @@ Author: Cernie
 Unzip the CatDruidDPS folder into WoW directory Interface/Addons folder. Remove the -master from the folder name.
 
 # Introduction
+This addon has been customized to work with Turtle WoW 1.17.2.
+
 This addon adds macro functions necessary for a druid to use for maximum dps while leveling, in dungeons/raids or for fun. While there are inputs for the user to customize, there are also checks the addon automatically does such as:
 - Determines ability costs for the druid based on talents and gear (idol slot).
 - Detects and automatically uses Rune of Metamorphosis when low on mana.
@@ -55,6 +59,12 @@ Description of parameters (inputs to the macro)
   - This is a true or false value that determines if you want the macro to automatically use innervate on yourself.
   - Values are true or false.
   - Note the lack of quotation marks.
+- groupAvgDPS
+  - This is an integer that should be the approximate average of your other party/raid members' DPS. Use a DPS meter to find this number.
+  - Value is an integer.
+  - Note the lack of quotation marks.
+
+My fork of this addon uses the groupAvgDPS to estimate how close your target is to dying. This number will change for every group, and even every fight, so don't worry about having to do exact math to figure out your party/raid's average dps. This number should be larger when your party/raid members are higher level, better geared, fight low-armor/resistance enemies, focus fire more, and don't AOE much. This number will be much smaller if your party/raid members are low level, undergeared, fighting tough enemies, aren't focusing your target, and have DPS contribution from AOE. If you notice that your Ferocious Bite is being cast too early, lower the number. It's difficult to notice when groupAvgDPS is set too low, because there are multiple reasons why you might not be able to Ferocious Bite.
 
 # Example macro
-<code>/script CatDruidDPS_main("Shred", "Ravage", "Ferocious Bite", true, "DruidBar", true, true);</code>
+<code>/script CatDruidDPS_main("Shred", "Ravage", "Ferocious Bite", true, "DruidBar", true, true, 250);</code>

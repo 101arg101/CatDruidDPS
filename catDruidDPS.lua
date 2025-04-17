@@ -39,14 +39,18 @@ function CatDruidDPS_OnLoad()
 		DEFAULT_CHAT_FRAME:AddMessage("   -This is a true or false value that determines if you want the macro to automatically use innervate on yourself.");
 		DEFAULT_CHAT_FRAME:AddMessage("   -Values are true or false.");
 		DEFAULT_CHAT_FRAME:AddMessage("   -Note the lack of quotation marks.");
+		DEFAULT_CHAT_FRAME:AddMessage("groupAvgDPS");
+		DEFAULT_CHAT_FRAME:AddMessage("   -This is an integer that should be the approximate average of your other party/raid members' DPS. Use a DPS meter to find this number.");
+		DEFAULT_CHAT_FRAME:AddMessage("   -Value is an integer.");
+		DEFAULT_CHAT_FRAME:AddMessage("   -Note the lack of quotation marks.");
 		DEFAULT_CHAT_FRAME:AddMessage("Example macro:");
-		DEFAULT_CHAT_FRAME:AddMessage("   /script CatDruidDPS_main('Shred', 'Ravage', 'Ferocious Bite', true, 'DruidBar', true, true);");
+		DEFAULT_CHAT_FRAME:AddMessage("   /script CatDruidDPS_main('Shred', 'Ravage', 'Ferocious Bite', true, 'DruidBar', true, true, 250);");
 	end;
 	SLASH_CATDRUIDDPS1 = "/catdps";
 end;
 
 --commented out code includes an experimental feature of waiting for the GCD to powershift
-function CatDruidDPS_main(mainDamage, opener, finisher, isPowerShift, druidBarAddon, isUseConsumables, isSelfInnervate)
+function CatDruidDPS_main(mainDamage, opener, finisher, isPowerShift, druidBarAddon, isUseConsumables, isSelfInnervate, groupAvgDPS)
 	local abilities = {"Ferocious Bite", "Rip", "Shred", "Claw", "Rake", "Ravage", "Pounce"};
 	local cp = GetComboPoints();
 	local cast = CastSpellByName;
@@ -159,6 +163,9 @@ function CatDruidDPS_main(mainDamage, opener, finisher, isPowerShift, druidBarAd
 	--choose which action to perform
 	if (currentForm == catForm and prowl == true and (energy >= openerEnergy or clearcast == true)) then cast(opener);
 	elseif (currentForm == catForm and CatDruidDPS_findAttackActionSlot() == 0) then AttackTarget();
+  elseif (currentForm == catForm and CatDruidDPS_isTargetLowHP(groupAvgDPS)) then
+    --DEFAULT_CHAT_FRAME:AddMessage("--- EARLY BITE ---");
+    cast("Ferocious Bite");
 	elseif (currentForm == catForm and cp >= 5 and (energy >= minFinisherEnergy or clearcast == true)) then 
 		if(finisher == "Rip" and CatDruidDPS_isTargetDebuff("target", "Ability_GhoulFrenzy") == true) then finisher = "Ferocious Bite"; end;
 		if(finisher == abilities[1] and (energy >= 63 or clearcast == true)) then
@@ -351,4 +358,112 @@ function CatDruidDPS_isBuffTextureActive(texture)
 		i=i+1
 	end;	
 	return isBuffActive;
+end;
+
+-- /script CatDruidDPS_isTargetLowHP("target");
+--returns boolean of whether or not the target is approximately low enough to finishing move on
+function CatDruidDPS_isTargetLowHP(groupAvgDPS)
+	local isLow = false;
+  local health = UnitHealth("target");
+  local members = GetNumRaidMembers();
+  local cp = GetComboPoints();
+	local energy = UnitMana("player");
+	local clearcast = CatDruidDPS_isBuffTextureActive("Spell_Shadow_ManaBurn");
+  local biteCost = 35;
+  local energyScale = 0;
+  local flat = 0;
+  local cpScale = 0;
+  local baseAP, posBuffAP, negBuffAP = UnitAttackPower("player");
+  local ap = baseAP + posBuffAP + negBuffAP;
+  local biteRank = "not learned";
+  local ta, tb, tc, td, faRank, te = GetTalentInfo(2,2);
+  local tf, tg, th, ti, sfRank, tj = GetTalentInfo(2,16);
+  
+  local i = 1
+  while true do
+    local spellName, spellRank = GetSpellName(i, BOOKTYPE_SPELL)
+    if not spellName then
+      do break end
+    end
+    if(spellName == "Ferocious Bite") then
+      biteRank = spellRank;
+    end;
+    i = i + 1
+  end;
+  --DEFAULT_CHAT_FRAME:AddMessage(biteRank);
+  
+  if(biteRank == "Rank 1") then
+    energyScale = 1;
+    flat = 4;
+    cpScale = 31;
+  end;
+  if(biteRank == "Rank 2") then
+    energyScale = 1;
+    flat = 14;
+    cpScale = 36;
+  end;
+  if(biteRank == "Rank 3") then
+    energyScale = 1.5;
+    flat = 20;
+    cpScale = 59;
+  end;
+  if(biteRank == "Rank 4") then
+    energyScale = 2;
+    flat = 30;
+    cpScale = 92;
+  end;
+  if(biteRank == "Rank 5") then
+    energyScale = 2.5;
+    flat = 45;
+    cpScale = 128;
+  end;
+  if(biteRank == "Rank 6") then
+    energyScale = 2.7;
+    flat = 52;
+    cpScale = 147;
+  end;
+  
+  
+  
+  
+  --local numTabs = GetNumTalentTabs();
+  --for t=1, numTabs do
+  --  DEFAULT_CHAT_FRAME:AddMessage(GetTalentTabInfo(t)..":");
+  --  local numTalents = GetNumTalents(t);
+  --  for j=1, numTalents do
+  --    nameTalent, icon, tier, column, currRank, maxRank= GetTalentInfo(t,j);
+  --    DEFAULT_CHAT_FRAME:AddMessage(j.." - "..nameTalent..": "..currRank.."/"..maxRank);
+  --  end
+  --end
+  
+  
+  
+  
+  
+  
+  if(clearcast) then
+    biteCost = 0;
+  end;
+
+  if(members == 0) then
+    -- this returns 4 if the player is in a party of 5, which effectively excludes the healer from calcs, but not the player
+    members = GetNumPartyMembers();
+  end;
+  
+  local threshold = members*groupAvgDPS + math.floor((ap*0.1526 + (energy - biteCost)*energyScale + cp*cpScale + flat)*(1 + faRank*.05 + sfRank*.1));
+  
+  if(health == 0 or cp == 0 or flat == 0) then
+     --DEFAULT_CHAT_FRAME:AddMessage("unable to Ferocious Bite");
+     return false;
+  elseif(health <= threshold) then
+    --DEFAULT_CHAT_FRAME:AddMessage("group + ap + energy + cp + flat * talents");
+    --DEFAULT_CHAT_FRAME:AddMessage(tostring(members*groupAvgDPS).." + ("..tostring(ap*0.1526).." + "..tostring((energy - biteCost)*energyScale).." + "..tostring(cp*cpScale).." + "..tostring(flat)..") * "..tostring(1 + faRank*.05 + sfRank*.1));
+    --DEFAULT_CHAT_FRAME:AddMessage(tostring(health).." <= "..tostring(threshold));
+    return true;
+  end;
+  --DEFAULT_CHAT_FRAME:AddMessage("group + ap + energy + cp + flat * talents");
+  --DEFAULT_CHAT_FRAME:AddMessage(tostring(members*groupAvgDPS).." + ("..tostring(ap*0.1526).." + "..tostring((energy - biteCost)*energyScale).." + "..tostring(cp*cpScale).." + "..tostring(flat)..") * "..tostring(1 + faRank*.05 + sfRank*.1));
+  --DEFAULT_CHAT_FRAME:AddMessage(tostring(health).." > "..tostring(threshold));
+  
+	return false;
 end;
