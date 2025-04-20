@@ -11,7 +11,7 @@ Author: Cernie & 101arg101
 
 # Installation
 
-Unzip the CatDruidDPS folder into WoW directory Interface/Addons folder. Remove the -master from the folder name.
+In the Turtle WoW client, navigate to the Addons tab and click "Add new Addon". Paste <code>https://github.com/101arg101/CatDruidDPS</code> into the text box and install. You can manually install this addon by unzipping the CatDruidDPS folder into WoW directory Interface/Addons folder and removing the -master from the folder name.
 
 # Introduction
 
@@ -59,11 +59,13 @@ Description of parameters (inputs to the macro)
   - Values are true or false.
   - Note the lack of quotation marks.
 - groupAvgDPS
-  - This is an integer that should be the approximate average of your other party/raid members' DPS. Use a DPS meter to find this number.
+  - This is an integer that should be the approximate average of your other party/raid members' DPS. Use a DPS meter to determine this number.
   - Value is an integer.
   - Note the lack of quotation marks.
 
 My fork of this addon uses the groupAvgDPS to estimate how close your target is to dying. This number will change for every group, and even every fight, so don't worry about having to do exact math to figure out your party/raid's average dps. This number should be larger when your party/raid members are higher level, better geared, fight low-armor/resistance enemies, focus fire more, and don't AOE much. This number will be much smaller if your party/raid members are low level, undergeared, fighting tough enemies, aren't focusing your target, and have DPS contribution from AOE. If you notice that your Ferocious Bite is being cast too early, lower the number. It's difficult to notice when groupAvgDPS is set too low, because there are multiple reasons why you might not be able to Ferocious Bite.
 
+Please note that at this time, there appears to be a bug where the Turtle WoW client might delete this addon the first time you install it. You'll have to install it again to get it to work.
+
 # Example macro
-<code>/script CatDruidDPS_main("Shred", "Ravage", "Ferocious Bite", true, "DruidBar", true, true, 250);</code>
+<code>/script CatDruidDPS_main("Claw", "Pounce", "Ferocious Bite", true, "DruidBar", true, true, 250);</code>
